@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>Getting trasformOrigin for GSAP</title>
+
+    <meta name="webApp.size" content="width=max,height=max">
+
+    <script type="text/javascript">
+        
+    </script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            padding: 0;
+            margin : 0;
+            height : 100vh;
+            font-family: "Segoe UI",Arial,sans-serif;
+        }
+        h1{
+            margin:auto;
+            padding:20px;
+            border: 5px dashed #fff;
+        }
+        #drop-zone {
+            color:#ffffff;
+            position: absolute;
+            width: 100%;
+            height :100%;
+            overflow: auto;
+            background-color: #a4b3b0;
+            display:flex;
+            flex-wrap:wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            border: 2px solid black;
+        }
+        canvas{
+            
+            max-height:550px;
+            max-width:400px;
+            width:auto;
+            height: auto;
+            margin-top:30px;
+            background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+
+        }
+        .container{
+            position:relative;
+           
+        }
+        .clipboard {
+            text-align: right;
+            width:100%;
+            height: 5%;
+            position:absolute;
+            font-size:1.6vh;
+            top:0%;
+            right:0%;
+            padding:2%;
+            background-color:rgba(0,0,0,0.5);
+            font-weight: normal;
+            cursor:pointer;
+        }
+         .clipboard:hover{
+            
+            background-color:rgba(0,0,0,1);
+         }
+         .clipboard:active{
+            background-color:rgba(0,0,0,0.5);
+         }
+         .mm{
+            text-align: center;
+            width:35%;
+            position:absolute;
+            font-size:0.8vw;
+            padding:2%;
+            background-color:rgba(0,0,0,0.8);
+            font-weight: normal;
+            display:none;
+        }
+        .mouseStage{
+            position:absolute;
+            margin-top:30px;
+        }
+    </style>
+    
+
+</head>
+<body>
+    <div id="drop-zone">
+        <h1>DRAG & DROP IMAGES HERE</h1>
+    </div>
+    <script>
+        //DROPPER Commit
+        var dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const files = e.dataTransfer.files;
+            for (var i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (validateImage(file)) {
+                    document.querySelector('h1').style.display="none";
+                    const reader = new FileReader();
+                     
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        setTimeout(()=>getPNGOrigin(img,file.name),10);
+                    };
+                    try {
+                        reader.readAsDataURL(file);
+                    } catch (e) {}
+                }
+            }
+        });
+        //VALIDATE IMAGE
+        function validateImage(file) {
+            const validImageTypes = ["image/gif", "image/jpeg", "image/png"];
+            if (validImageTypes.indexOf(file.type) === -1) {
+                alert('Invalid file type. Only gif, jpeg and png files are allowed.');
+                return false;
+            }
+            return true;
+        }
+        function MouseM(e,tooltip){
+            let c = e.target.getBoundingClientRect();
+            let x=e.clientX - (c.left-0.5),
+                y=e.clientY - (c.top-0.5);
+        
+            if(((x/e.target.clientWidth)*100).toFixed(1)<50){
+                tooltip.style.left = x + 'px';
+            }else{
+                tooltip.style.left = x-parseInt(_getStyle(tooltip,'width'), 10) + 'px'
+            }
+            
+            tooltip.style.top = y-5+ 'px';
+            tooltip.innerHTML = ((x/e.target.clientWidth)*100).toFixed(1)+'% '+ ((y/e.target.clientHeight)*100).toFixed(1)+'%';
+           
+        }          
+        function getPNGOrigin(imgElem,fileName){
+               let img = imgElem,originX,originY,pixels,l,bound,x,y,
+               c = document.createElement('canvas'),
+               ctx = c.getContext("2d", {willReadFrequently:true,});
+
+                c.width = img.width;
+                c.height = img.height;
+                 //draw image
+                ctx.drawImage(img, 0, 0);
+                //ovveride ctx and get context
+                ctx = c.getContext('2d', {willReadFrequently:true,});
+                pixels = ctx.getImageData(0, 0, c.width, c.height);
+                l = pixels.data.length;
+                bound = {top: null,left: null,right: null,bottom: null};
+    
+                for (i = 0; i < l; i += 4) {
+                    if (pixels.data[i + 3] !== 0) {
+                        x = (i / 4) % c.width;
+                        y = ~~((i / 4) / c.width);
+
+                        if (bound.top === null) {
+                            bound.top = y;
+                        }
+
+                        if (bound.left === null) {
+                            bound.left = x;
+                        } else if (x < bound.left) {
+                            bound.left = x;
+                        }
+
+                        if (bound.right === null) {
+                            bound.right = x;
+                        } else if (bound.right < x) {
+                            bound.right = x;
+                        }
+
+                        if (bound.bottom === null) {
+                            bound.bottom = y;
+                        } else if (bound.bottom < y) {
+                            bound.bottom = y;
+                        }
+                    }
+                }
+                
+                originX=((((bound.right + bound.left)/2)/c.width)*100).toFixed(1);
+                originY=((((bound.bottom + bound.top)/2)/c.height)*100).toFixed(1);
+                
+                //draw red dot to center
+                ctx.beginPath();
+                ctx.arc((bound.right + bound.left)/2, (bound.bottom + bound.top)/2, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = "rgba(255, 0, 0, 1)";
+                ctx.fill();
+            
+                //Add images and objects to stage;
+            
+               const cont = document.createElement('div');
+               cont.className="container";
+               const cb = document.createElement('div');
+               cb.className="clipboard";
+               const mm = document.createElement('div');
+               mm.className="mm";
+               const mouseStage = document.createElement('div');
+               mouseStage.className="mouseStage";
+            
+               dropZone.appendChild(cont);
+               cont.appendChild(mouseStage);
+               cont.appendChild(c);
+               cont.appendChild(cb);
+               cont.appendChild(mm);
+              
+               mouseStage.style.width=_getStyle(c,'width');
+               mouseStage.style.height=_getStyle(c,'height');
+           
+               cb.innerHTML='Copy: transformOrigin:'+originX+'% '+ originY+'%';
+             
+               //ADD MOUSE EVENTS 
+               cb.addEventListener("click",(e)=>{
+                   navigator.clipboard.writeText('transformOrigin:'+originX+'% '+ originY+'%');
+               });
+               mouseStage.addEventListener("mousemove",(e)=>{MouseM(e,mm)});
+               mouseStage.addEventListener("mouseenter",(e)=>{
+                   mm.style.display='block';
+               });
+               mouseStage.addEventListener("mouseleave",(e)=>{
+                   mm.style.display='none';
+               });
+              
+               //DRAW FILENAME
+               ctx.fillStyle = "white";
+               ctx.font = "normal 2.5vw Arial";
+               ctx.fillText(fileName,20,30);
+
+        }
+        function _getStyle(c,style){
+            return window.getComputedStyle(c,null).getPropertyValue(style);
+        }
+    </script>
+
+</body>
+</html>
