@@ -12,7 +12,6 @@
     <script type="text/javascript">
         
     </script>
-
     <style>
 
         * {
@@ -96,7 +95,7 @@
         }
     </style>
     
-
+  
 </head>
 <body>
     <div id="drop-zone">
@@ -237,7 +236,7 @@
              
                //ADD MOUSE EVENTS 
                cb.addEventListener("click",(e)=>{
-                   navigator.clipboard.writeText('transformOrigin:'+originX+'% '+ originY+'%');
+                   navigator.clipboard.writeText('transformOrigin:\"'+originX+'% '+ originY+'%\"');
                });
                mouseStage.addEventListener("mousemove",(e)=>{MouseM(e,mm)});
                mouseStage.addEventListener("mouseenter",(e)=>{
