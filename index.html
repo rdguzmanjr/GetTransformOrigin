@@ -62,7 +62,7 @@
         .clipboard {
             text-align: right;
             width:100%;
-            height: 5%;
+            height: auto;
             position:absolute;
             font-size:1.6vh;
             top:0%;
@@ -81,7 +81,7 @@
          }
          .mm{
             text-align: center;
-            width:35%;
+            width:40%;
             position:absolute;
             font-size:0.8vw;
             padding:2%;
@@ -92,7 +92,25 @@
         .mouseStage{
             position:absolute;
             margin-top:30px;
+            z-index: 9999999;
         }
+        .lineh {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50%;
+                height: 0.5px;
+                background-color: black;
+         }
+         .linev {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 5%;
+                width: 0.5px;
+                height: 94%;
+                background-color: black;
+         }
     </style>
     
   
@@ -144,21 +162,23 @@
             }
             return true;
         }
-        function MouseM(e,tooltip){
+        function MouseM(e,tooltip,v,h){
             let c = e.target.getBoundingClientRect();
-            let x=e.clientX - (c.left-0.5),
-                y=e.clientY - (c.top-0.5);
-        
+            let x=e.clientX - (c.left-0.5);
+            let y=e.clientY - (c.top-0.5);
             if(((x/e.target.clientWidth)*100).toFixed(1)<50){
                 tooltip.style.left = x + 'px';
             }else{
                 tooltip.style.left = x-parseInt(_getStyle(tooltip,'width'), 10) + 'px'
             }
             
+            v.style.left = `${x}px`;
+            h.style.top = `${y+28}px`;
+
             tooltip.style.top = y-5+ 'px';
-            tooltip.innerHTML = ((x/e.target.clientWidth)*100).toFixed(1)+'% '+ ((y/e.target.clientHeight)*100).toFixed(1)+'%';
-           
-        }          
+            tooltip.innerHTML = ((x/e.target.clientWidth)*100).toFixed(1)+'% '+ ((y/e.target.clientHeight)*100).toFixed(1)+'%'; 
+        } 
+
         function getPNGOrigin(imgElem,fileName){
                let img = imgElem,originX,originY,pixels,l,bound,x,y,
                c = document.createElement('canvas'),
@@ -173,7 +193,7 @@
                 pixels = ctx.getImageData(0, 0, c.width, c.height);
                 l = pixels.data.length;
                 bound = {top: null,left: null,right: null,bottom: null};
-    
+            
                 for (i = 0; i < l; i += 4) {
                     if (pixels.data[i + 3] !== 0) {
                         x = (i / 4) % c.width;
@@ -211,7 +231,9 @@
                 ctx.arc((bound.right + bound.left)/2, (bound.bottom + bound.top)/2, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = "rgba(255, 0, 0, 1)";
                 ctx.fill();
-            
+                
+
+               
                 //Add images and objects to stage;
             
                const cont = document.createElement('div');
@@ -222,23 +244,34 @@
                mm.className="mm";
                const mouseStage = document.createElement('div');
                mouseStage.className="mouseStage";
-            
+
+               const lineh = document.createElement('div');
+               lineh.className="lineh";
+               
+               const linev = document.createElement('div');
+               linev.className="linev";
+
                dropZone.appendChild(cont);
                cont.appendChild(mouseStage);
                cont.appendChild(c);
                cont.appendChild(cb);
                cont.appendChild(mm);
-              
+               cont.appendChild(lineh);
+               cont.appendChild(linev);
+
                mouseStage.style.width=_getStyle(c,'width');
                mouseStage.style.height=_getStyle(c,'height');
            
                cb.innerHTML='Copy: transformOrigin:'+originX+'% '+ originY+'%';
-             
+               
                //ADD MOUSE EVENTS 
                cb.addEventListener("click",(e)=>{
                    navigator.clipboard.writeText('transformOrigin:\"'+originX+'% '+ originY+'%\"');
                });
-               mouseStage.addEventListener("mousemove",(e)=>{MouseM(e,mm)});
+
+               mouseStage.addEventListener("mousemove",(e)=>{
+                  MouseM(e,mm,linev,lineh);
+               });
                mouseStage.addEventListener("mouseenter",(e)=>{
                    mm.style.display='block';
                });
