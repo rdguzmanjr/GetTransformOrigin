@@ -49,7 +49,6 @@
             max-width:400px;
             width:auto;
             height: auto;
-            margin-top:30px;
             background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
@@ -57,18 +56,22 @@
         }
         .container{
             position:relative;
-           
         }
+        .mouseStage{
+            position:absolute;
+            z-index: 9999999;
+        }
+
         .clipboard,.clipboard2 {
             text-align: right;
             width:100%;
             height: auto;
-            position:absolute;
-            font-size:1.6vh;
+            position:relative;
+            font-size:1.4vh;
             top:0%;
             right:0%;
             padding:2%;
-            background-color:rgba(0,0,0,0.5);
+            background-color:#00000080;
             font-weight: normal;
             cursor:pointer;
         }
@@ -76,7 +79,6 @@
             top:-5%;
         }
          .clipboard:hover,.clipboard2:hover{
-            
             background-color:rgba(0,0,0,1);
          }
          .clipboard:active, .clipboard2:active{
@@ -88,15 +90,11 @@
             position:absolute;
             font-size:0.8vw;
             padding:2%;
-            background-color:rgba(0,0,0,0.8);
+            background-color:rgba(0,0,0,0.6);
             font-weight: normal;
             display:none;
         }
-        .mouseStage{
-            position:absolute;
-            margin-top:30px;
-            z-index: 9999999;
-        }
+        
         .lineh {
                 position: absolute;
                 left: 0;
@@ -109,14 +107,12 @@
                 position: absolute;
                 left: 0;
                 right: 0;
-                top: 5%;
+                top: 0;
                 width: 0.5px;
-                height: 94%;
+                height:99.3%;
                 background-color: black;
          }
     </style>
-    
-  
 </head>
 <body>
     <div id="drop-zone">
@@ -167,8 +163,9 @@
         }
         function MouseM(e,tooltip,v,h){
             let c = e.target.getBoundingClientRect();
-            let x=e.clientX - (c.left-0.5);
-            let y=e.clientY - (c.top-0.5);
+            let x=e.clientX-c.left;
+            let y=e.clientY-c.top;
+
             if(((x/e.target.clientWidth)*100).toFixed(1)<50){
                 tooltip.style.left = x + 'px';
             }else{
@@ -176,9 +173,9 @@
             }
             
             v.style.left = `${x}px`;
-            h.style.top = `${y+28}px`;
+            h.style.top = `${y}px`;
 
-            tooltip.style.top = y-5+ 'px';
+            tooltip.style.top = y-25+ 'px';
             tooltip.innerHTML = ((x/e.target.clientWidth)*100).toFixed(1)+'% '+ ((y/e.target.clientHeight)*100).toFixed(1)+'%'; 
         } 
 
@@ -241,14 +238,22 @@
 
                
                 //Add images and objects to stage;
-            
+               const maincont = document.createElement('div');
+               maincont.className="maincont";  
+             
                const cont = document.createElement('div');
                cont.className="container";
+               
+               const cbholder = document.createElement('div');
+               cbholder.className="cbholder";
+
                const cb = document.createElement('div');
                cb.className="clipboard";
                const cb2 = document.createElement('div');
+               
                cb2.className="clipboard2";
                const mm = document.createElement('div');
+
                mm.className="mm";
                const mouseStage = document.createElement('div');
                mouseStage.className="mouseStage";
@@ -258,12 +263,18 @@
                
                const linev = document.createElement('div');
                linev.className="linev";
+               
 
-               dropZone.appendChild(cont);
+               dropZone.appendChild(maincont);
+               maincont.appendChild(cbholder);
+               maincont.appendChild(cont);
+              
+
+               cbholder.appendChild(cb);
+               cbholder.appendChild(cb2);
                cont.appendChild(mouseStage);
                cont.appendChild(c);
-               cont.appendChild(cb);
-               cont.appendChild(cb2);
+               
                cont.appendChild(mm);
                cont.appendChild(lineh);
                cont.appendChild(linev);
@@ -273,7 +284,7 @@
                
                cb.innerHTML='Copy: transformOrigin:'+originX+'% '+ originY+'%';
                cb2.innerHTML=`Copy: top:${ptop},right:${pright},bottom:${pbottom},left:${pleft}`;
-               
+              
                //ADD MOUSE EVENTS 
                cb.addEventListener("click",(e)=>{
                    navigator.clipboard.writeText('transformOrigin:\"'+originX+'% '+ originY+'%\"');
@@ -300,6 +311,7 @@
         function _getStyle(c,style){
             return window.getComputedStyle(c,null).getPropertyValue(style);
         }
+        
     </script>
 
 </body>
