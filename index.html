@@ -287,7 +287,7 @@
               
                //ADD MOUSE EVENTS 
                cb.addEventListener("click",(e)=>{
-                   navigator.clipboard.writeText('transformOrigin:\"'+originX+'% '+ originY+'%\"');
+                   navigator.clipboard.writeText(`transformOrigin:'${originX}% ${originY}%'`);
                });
                cb2.addEventListener("click",(e)=>{
                    navigator.clipboard.writeText(`top:${ptop},right:${pright},bottom:${pbottom},left:${pleft}`);
